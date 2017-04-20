@@ -1,5 +1,6 @@
 package org.abimon.db4k.objects
 
+import java.time.LocalDateTime
 import java.util.*
 
 enum class DefaultAvatars constructor(val code: String) {
@@ -20,7 +21,7 @@ enum class DefaultAvatars constructor(val code: String) {
 }
 
 data class User(
-        val id: String,
+        val id: Snowflake,
         val username: String,
         val discriminator: String,
         val avatar: Optional<String>,
@@ -33,7 +34,7 @@ data class User(
 }
 
 data class PartialUser(
-        val id: String,
+        val id: Snowflake,
         val username: Optional<String>,
         val discriminator: Optional<String>,
         val avatar: Optional<String>,
@@ -44,3 +45,12 @@ data class PartialUser(
 ) {
     fun getAvatar(): String = avatar.orElseGet { DefaultAvatars.getDefaultForUser(discriminator.orElse("0")).avatarURL }
 }
+
+data class GuildMember(
+        val user: User,
+        val nick: Optional<String>,
+        val roles: Array<Snowflake>,
+        val joined_at: LocalDateTime,
+        val deaf: Boolean,
+        val mute: Boolean
+)

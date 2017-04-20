@@ -14,8 +14,9 @@ import io.vertx.core.json.JsonObject
 import org.abimon.db4k.events.*
 import org.abimon.db4k.jackson.LDTDeserialiser
 import org.abimon.db4k.jackson.LDTSerialiser
-import org.abimon.db4k.objects.Message
-import org.abimon.db4k.objects.PartialMessage
+import org.abimon.db4k.jackson.SnowflakeDeserialiser
+import org.abimon.db4k.jackson.SnowflakeSerialiser
+import org.abimon.db4k.objects.*
 import java.net.URI
 import java.time.LocalDateTime
 import java.util.concurrent.ExecutorService
@@ -118,24 +119,24 @@ class DiscordGateway(val websocket: WebSocket, val token: String, val listeners:
         val eventType = GatewayEvent.eventFor(payload.getString("t"))
         when (eventType) {
             GatewayEvent.READY -> dispatch(data.map(ReadyEvent::class))
-            GatewayEvent.RESUMED -> TODO()
-            GatewayEvent.CHANNEL_CREATE -> TODO()
-            GatewayEvent.CHANNEL_UPDATE -> TODO()
-            GatewayEvent.CHANNEL_DELETE -> TODO()
-            GatewayEvent.GUILD_CREATE -> TODO()
-            GatewayEvent.GUILD_UPDATE -> TODO()
-            GatewayEvent.GUILD_DELETE -> TODO()
-            GatewayEvent.GUILD_BAN_ADD -> TODO()
-            GatewayEvent.GUILD_BAN_REMOVE -> TODO()
-            GatewayEvent.GUILD_EMOJIS_UPDATE -> TODO()
-            GatewayEvent.GUILD_INTEGRATIONS_UPDATE -> TODO()
-            GatewayEvent.GUILD_MEMBER_ADD -> TODO()
-            GatewayEvent.GUILD_MEMBER_REMOVE -> TODO()
-            GatewayEvent.GUILD_MEMBER_UPDATE -> TODO()
-            GatewayEvent.GUILD_MEMBERS_CHUNK -> TODO()
-            GatewayEvent.GUILD_ROLE_CREATE -> TODO()
-            GatewayEvent.GUILD_ROLE_UPDATE -> TODO()
-            GatewayEvent.GUILD_ROLE_DELETE -> TODO()
+            GatewayEvent.RESUMED -> dispatch(ResumedEvent())
+            GatewayEvent.CHANNEL_CREATE -> if(data.getBoolean("is_private", false)) dispatch(DMChannelCreateEvent(data.map(DMChannel::class))) else dispatch(GuildChannelCreateEvent(data.map(Channel::class)))
+            GatewayEvent.CHANNEL_UPDATE -> dispatch(GuildChannelUpdateEvent(data.map(Channel::class)))
+            GatewayEvent.CHANNEL_DELETE -> if(data.getBoolean("is_private", false)) dispatch(DMChannelCloseEvent(data.map(DMChannel::class))) else dispatch(GuildChannelDeleteEvent(data.map(Channel::class)))
+            GatewayEvent.GUILD_CREATE -> dispatch(GuildLoadedEvent(data.map(Guild::class)))
+            GatewayEvent.GUILD_UPDATE -> dispatch(GuildUpdateEvent(data.map(Guild::class)))
+            GatewayEvent.GUILD_DELETE -> if(data.getBoolean("unavailable", false)) dispatch(GuildUnavailableEvent(Snowflake(data.getString("id")))) else dispatch(GuildLeftEvent(Snowflake(data.getString("id"))))
+            GatewayEvent.GUILD_BAN_ADD -> dispatch(GuildBanEvent(Snowflake(data.getString("guild_id")), data.map(User::class)))
+            GatewayEvent.GUILD_BAN_REMOVE -> dispatch(GuildPardonEvent(Snowflake(data.getString("guild_id")), data.map(User::class)))
+            GatewayEvent.GUILD_EMOJIS_UPDATE -> dispatch(data.map(GuildEmojiUpdateEvent::class))
+            GatewayEvent.GUILD_INTEGRATIONS_UPDATE -> dispatch(GuildIntegrationUpdateEvent(Snowflake(data.getString("guild_id"))))
+            GatewayEvent.GUILD_MEMBER_ADD -> dispatch(GuildMemberAddEvent(Snowflake(data.getString("guild_id")), data.map(GuildMember::class)))
+            GatewayEvent.GUILD_MEMBER_REMOVE -> dispatch(data.map(GuildMemberRemoveEvent::class))
+            GatewayEvent.GUILD_MEMBER_UPDATE -> dispatch(data.map(GuildMemberUpdateEvent::class))
+            GatewayEvent.GUILD_MEMBERS_CHUNK -> dispatch(data.map(GuildMemberChunkEvent::class))
+            GatewayEvent.GUILD_ROLE_CREATE -> dispatch(data.map(RoleCreateEvent::class))
+            GatewayEvent.GUILD_ROLE_UPDATE -> dispatch(data.map(RoleUpdateEvent::class))
+            GatewayEvent.GUILD_ROLE_DELETE -> dispatch(data.map(RoleDeleteEvent::class))
             GatewayEvent.MESSAGE_CREATE -> dispatch(MessageCreateEvent(data.map(Message::class)))
             GatewayEvent.MESSAGE_UPDATE -> dispatch(MessageUpdateEvent(data.map(PartialMessage::class)))
             GatewayEvent.MESSAGE_DELETE -> dispatch(data.map(MessageDeleteEvent::class))
@@ -249,7 +250,12 @@ enum class GatewayEvent {
 
 val objMapper: ObjectMapper = ObjectMapper()
         .findAndRegisterModules()
-        .registerModule(SimpleModule().addDeserializer(LocalDateTime::class.java, LDTDeserialiser()).addSerializer(LocalDateTime::class.java, LDTSerialiser()))
+        .registerModule(SimpleModule()
+                .addDeserializer(LocalDateTime::class.java, LDTDeserialiser())
+                .addDeserializer(Snowflake::class.java, SnowflakeDeserialiser())
+                .addSerializer(LocalDateTime::class.java, LDTSerialiser())
+                .addSerializer(Snowflake::class.java, SnowflakeSerialiser())
+        )
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
 operator fun JsonObject.get(key: String): JsonObject = getJsonObject(key)

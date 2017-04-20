@@ -3,8 +3,8 @@ package org.abimon.db4k.objects
 import java.util.*
 
 data class Channel(
-        val id: String,
-        val guild_id: String,
+        val id: Snowflake,
+        val guild_id: Snowflake,
         val name: String,
         val type: String,
         val position: Int,
@@ -26,7 +26,7 @@ data class Channel(
 }
 
 data class DMChannel(
-        val id: String,
+        val id: Snowflake,
         val is_private: Boolean,
         val recipients: Array<User>,
         val last_message_id: Optional<String>
@@ -46,4 +46,4 @@ data class DMChannel(
     override fun hashCode(): Int = id.hashCode()
 }
 
-data class PermissionOverwrite(val id: String, val type: String, val allow: Int, val deny: Int)
+data class PermissionOverwrite(val id: Snowflake, val type: String, val allow: Int, val deny: Int)

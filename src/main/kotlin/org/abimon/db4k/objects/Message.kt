@@ -6,8 +6,8 @@ import java.time.ZonedDateTime
 import java.util.*
 
 data class Message(
-        val id: String,
-        val channel_id: String,
+        val id: Snowflake,
+        val channel_id: Snowflake,
         val author: User,
         val content: String,
         val timestamp: LocalDateTime,
@@ -38,8 +38,8 @@ data class Message(
 }
 
 data class PartialMessage(
-        val id: String,
-        val channel_id: String,
+        val id: Snowflake,
+        val channel_id: Snowflake,
         val author: Optional<User>,
         val content: Optional<String>,
         val timestamp: Optional<LocalDateTime>,
@@ -134,7 +134,7 @@ data class EmbedField(
 )
 
 data class Attachment(
-        val id: String,
+        val id: Snowflake,
         val filename: String,
         val size: Int,
         val url: String,
