@@ -260,3 +260,4 @@ val objMapper: ObjectMapper = ObjectMapper()
 
 operator fun JsonObject.get(key: String): JsonObject = getJsonObject(key)
 fun <T : Any> JsonObject.map(mapTo: KClass<T>): T = objMapper.readValue(encode(), mapTo.java)
+fun Any.toJSON(): JsonObject = JsonObject(objMapper.writeValueAsString(this))

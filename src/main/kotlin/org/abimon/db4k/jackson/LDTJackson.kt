@@ -14,5 +14,5 @@ class LDTDeserialiser: JsonDeserializer<LocalDateTime>() {
 }
 
 class LDTSerialiser: JsonSerializer<LocalDateTime>() {
-    override fun serialize(value: LocalDateTime, gen: JsonGenerator, serializers: SerializerProvider) = gen.writeString(value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+    override fun serialize(value: LocalDateTime, gen: JsonGenerator, serializers: SerializerProvider) = gen.writeString(value.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME  ))
 }
