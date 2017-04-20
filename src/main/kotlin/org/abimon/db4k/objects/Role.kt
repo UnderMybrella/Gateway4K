@@ -7,6 +7,6 @@ data class Role(
         val hoist: Boolean,
         val position: Int,
         val permissions: Int,
-        val managed: Int,
+        val managed: Boolean,
         val mentionable: Boolean
 )
