@@ -84,7 +84,7 @@ class DiscordGateway(val websocket: WebSocket, val token: String, val listeners:
                 heartbeatSender.scheduleAtFixedRate(this::heartbeat, 0, (data as JsonObject).getLong("heartbeat_interval"), TimeUnit.MILLISECONDS)
                 identify()
             }
-            GatewayOP.HEARTBEAT_ACK -> println("Boop! Heartbeat acknowledged")
+            GatewayOP.HEARTBEAT_ACK -> {}
         }
     }
 
@@ -147,6 +147,10 @@ class DiscordGateway(val websocket: WebSocket, val token: String, val listeners:
             GatewayEvent.USER_UPDATE -> TODO()
             GatewayEvent.VOICE_STATE_UPDATE -> TODO()
             GatewayEvent.VOICE_SERVER_UPDATE -> TODO()
+            GatewayEvent.MESSAGE_REACTION_ADD -> TODO()
+            GatewayEvent.MESSAGE_REACTION_REMOVE -> TODO()
+            GatewayEvent.MESSAGE_ACK -> TODO()
+
             GatewayEvent.UNKNOWN -> println("Unknown event (${payload.getString("t")})!")
         }
     }
@@ -234,6 +238,9 @@ enum class GatewayEvent {
     USER_UPDATE,
     VOICE_STATE_UPDATE,
     VOICE_SERVER_UPDATE,
+    MESSAGE_REACTION_ADD,
+    MESSAGE_REACTION_REMOVE,
+    MESSAGE_ACK,
     UNKNOWN;
 
     companion object {
