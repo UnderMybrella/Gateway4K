@@ -54,3 +54,15 @@ data class GuildMember(
         val deaf: Boolean,
         val mute: Boolean
 )
+
+enum class ExplicitContentFilter {
+    ON_THE_EDGE,
+    FRIENDS_ARE_NICE,
+    KEEP_ME_SAFE
+}
+
+data class FriendSourceFlags(
+        val all: Boolean = false,
+        val mutual_guilds: Boolean = all,
+        val mutual_friends: Boolean = all
+)

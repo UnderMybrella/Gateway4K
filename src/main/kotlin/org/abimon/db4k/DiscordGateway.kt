@@ -56,7 +56,7 @@ class DiscordGateway(val websocket: WebSocket, val token: String, val listeners:
             when(th) {
                 is NotImplementedError -> {
                     if(th.stackTrace[0].lineNumber > 100)
-                        println("An operation is not yet implemented (line ${th.stackTrace[0].lineNumber})")
+                        println("An operation is not yet implemented (line ${th.stackTrace[0].lineNumber})\nPayload: ${frame.textData()}")
                     else {
                         println("A gateway operation is not yet implemented (line ${th.stackTrace[0].lineNumber})")
                         th.printStackTrace()
@@ -70,8 +70,8 @@ class DiscordGateway(val websocket: WebSocket, val token: String, val listeners:
 
     fun handleGateway(op: GatewayOP, payload: JsonObject, data: Any?) {
         when(op) {
-            GatewayOP.DISPATCH -> event(payload, data as JsonObject)
-            GatewayOP.HEARTBEAT -> TODO()
+            GatewayOP.DISPATCH -> event(payload, data as? JsonObject ?: JsonObject())
+            GatewayOP.HEARTBEAT -> heartbeat()
             GatewayOP.IDENTIFY -> TODO()
             GatewayOP.STATUS_UPDATE -> TODO()
             GatewayOP.VOICE_STATUS_UPDATE -> TODO()
@@ -142,14 +142,14 @@ class DiscordGateway(val websocket: WebSocket, val token: String, val listeners:
             GatewayEvent.MESSAGE_DELETE -> dispatch(data.map(MessageDeleteEvent::class))
             GatewayEvent.MESSAGE_BULK_DELETE -> dispatch(data.map(MessageBulkDeleteEvent::class))
             GatewayEvent.PRESENCE_UPDATE -> dispatch(data.map(PresenceUpdateEvent::class))
-            GatewayEvent.TYPING_START -> TODO()
-            GatewayEvent.USER_SETTINGS_UPDATE -> TODO()
+            GatewayEvent.TYPING_START -> dispatch(data.map(TypingStartEvent::class))
+            GatewayEvent.USER_SETTINGS_UPDATE -> dispatch(data.map(UserSettingsUpdateEvent::class))
             GatewayEvent.USER_UPDATE -> TODO()
-            GatewayEvent.VOICE_STATE_UPDATE -> TODO()
+            GatewayEvent.VOICE_STATE_UPDATE -> dispatch(data.map(VoiceStateUpdateEvent::class))
             GatewayEvent.VOICE_SERVER_UPDATE -> TODO()
-            GatewayEvent.MESSAGE_REACTION_ADD -> TODO()
-            GatewayEvent.MESSAGE_REACTION_REMOVE -> TODO()
-            GatewayEvent.MESSAGE_ACK -> TODO()
+            GatewayEvent.MESSAGE_REACTION_ADD -> dispatch(data.map(ReactionAddEvent::class))
+            GatewayEvent.MESSAGE_REACTION_REMOVE -> dispatch(data.map(ReactionRemoveEvent::class))
+            GatewayEvent.MESSAGE_ACK -> dispatch(data.map(MessageAckEvent::class))
 
             GatewayEvent.UNKNOWN -> println("Unknown event (${payload.getString("t")})!")
         }
